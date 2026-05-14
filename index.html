@@ -13,17 +13,17 @@
         .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 100; justify-content: center; align-items: center; }
     </style>
 </head>
-<body class="bg-slate-50 p-5 text-slate-800">
+<body class="bg-slate-50 p-5 text-slate-800 font-sans">
     <div id="loader" class="loading-overlay italic font-bold text-blue-600">同步雲端資料中...</div>
 
     <div class="max-w-7xl mx-auto">
         <header class="mb-8 flex justify-between items-end">
             <div>
                 <h1 class="text-4xl font-black italic text-slate-900 uppercase">HOME<span class="text-blue-600">SELF</span></h1>
-                <p class="text-slate-400 font-bold text-[10px] tracking-widest">CLOUD SYNC ACTIVE</p>
+                <p class="text-slate-400 font-bold text-[10px] tracking-widest uppercase">Cloud Management System</p>
             </div>
             <div class="text-right">
-                <p id="progress-text" class="text-3xl font-black text-blue-600">0%</p>
+                <p id="progress-text" class="text-3xl font-black text-blue-600 leading-none">0%</p>
             </div>
         </header>
 
@@ -31,19 +31,19 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycby87-F4k5AzYmEFzk9OsscaM5cm9bGyii25M2c7Vf0FoK-Fz5a7JJMIkpaalonwE1Oz/exec"; // ⚠️ 在此貼上你的 Apps Script 網址
+        const API_URL = "https://script.google.com/macros/s/AKfycby87-F4k5AzYmEFzk9OsscaM5cm9bGyii25M2c7Vf0FoK-Fz5a7JJMIkpaalonwE1Oz/exec";
         
         const properties = [
-            { id: 1, name: "紐3521", info: "NV", alert: "" },
-            { id: 2, name: "紐3536", info: "FB Bank", alert: "" },
-            { id: 3, name: "美593", info: "Hsiao", alert: "🚨 待補簽約" },
-            { id: 4, name: "美132", info: "Black", alert: "" },
-            { id: 5, name: "竹隆", info: "116/05 結", alert: "🟢 穩定運行" },
-            { id: 6, name: "國院", info: "待確認資料", alert: "" },
-            { id: 7, name: "勝境", info: "115/08 結", alert: "🟡 續約詢問" },
-            { id: 8, name: "雞排", info: "店面", alert: "" },
-            { id: 9, name: "宏器", info: "Milly", alert: "" },
-            { id: 10, name: "福西", info: "待核對", alert: "" }
+            { id: 1, name: "紐3521", info: "NV", lease: "", alert: "" },
+            { id: 2, name: "紐3536", info: "FB Bank", lease: "", alert: "" },
+            { id: 3, name: "美593", info: "Hsiao", lease: "", alert: "🚨 待補簽約" },
+            { id: 4, name: "美132", info: "Black", lease: "", alert: "" },
+            { id: 5, name: "竹隆", info: "工程師", lease: "至 116/05", alert: "🟢 穩定運行" },
+            { id: 6, name: "國院", info: "待確認", lease: "", alert: "" },
+            { id: 7, name: "勝境", info: "一般房客", lease: "至 115/08", alert: "🟡 續約詢問" },
+            { id: 8, name: "雞排", info: "店面租", lease: "", alert: "" },
+            { id: 9, name: "宏器", info: "Milly (外商)", lease: "", alert: "" },
+            { id: 10, name: "福西", info: "待核對", lease: "", alert: "" }
         ];
 
         let cloudData = {};
@@ -54,14 +54,13 @@
                 const response = await fetch(API_URL);
                 cloudData = await response.json();
                 render();
-            } catch (e) { alert("同步失敗，請檢查網路或 API 網址"); }
+            } catch (e) { console.error("Fetch failed", e); }
             document.getElementById('loader').style.display = 'none';
         }
 
         async function togglePaid(id) {
             const newStatus = !cloudData[id];
             document.getElementById('loader').style.display = 'flex';
-            
             try {
                 await fetch(API_URL, {
                     method: 'POST',
@@ -69,7 +68,7 @@
                 });
                 cloudData[id] = newStatus;
                 render();
-            } catch (e) { alert("更新失敗"); }
+            } catch (e) { alert("同步失敗，請稍後再試"); }
             document.getElementById('loader').style.display = 'none';
         }
 
@@ -86,13 +85,18 @@
                 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
-                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${isPaid ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-400'}">
+                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${isPaid ? 'bg-green-600 text-white' : (p.alert ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400')}">
                             ${isPaid ? '✅ 已入帳' : (p.alert || '⌛ 待收租')}
                         </span>
                     </div>
                     <h2 class="text-xl font-black">${p.name}</h2>
-                    <p class="text-[10px] font-bold text-slate-400 mb-6 uppercase tracking-widest">${p.info}</p>
-                    <button onclick="togglePaid(${p.id})" class="w-full py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all ${isPaid ? 'bg-white text-slate-400 border border-slate-100' : 'bg-slate-900 text-white shadow-lg'}">
+                    <div class="mt-1 mb-6">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${p.info}</p>
+                        <p class="text-[10px] font-medium text-slate-300 mt-0.5 uppercase tracking-tighter">
+                            ${p.lease ? '租約：' + p.lease : ''}
+                        </p>
+                    </div>
+                    <button onclick="togglePaid(${p.id})" class="w-full py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all ${isPaid ? 'bg-white text-slate-400 border border-slate-100' : 'bg-slate-900 text-white shadow-lg shadow-slate-200'}">
                         ${isPaid ? '回復未收' : '已收款'}
                     </button>
                 `;
