@@ -2,110 +2,106 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>HomeSelf | 專業物業代管系統</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HomeSelf Cloud</title>
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230F172A'/><path d='M30 30 V70 M70 30 V70 M30 50 H70' stroke='white' stroke-width='12' stroke-linecap='round'/><circle cx='50' cy='42' r='6' fill='%233B82F6'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .vibe-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .is-paid { background-color: #f0fdf4 !important; border: 2px solid #86efac !important; opacity: 0.7; }
-        .progress-bar { transition: width 0.5s ease; }
-        .glow-purple { border: 2px solid #a855f7; animation: pulse-p 2s infinite; }
-        @keyframes pulse-p { 0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(168, 85, 247, 0); } 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); } }
-        .glow-yellow { border: 2px solid #eab308; animation: pulse-y 2s infinite; }
-        @keyframes pulse-y { 0% { background: #fefce8; } 50% { background: #ffffff; } 100% { background: #fefce8; } }
+        body { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        .vibe-card { transition: all 0.3s ease; }
+        .is-paid { background-color: #f0fdf4 !important; border: 2px solid #86efac !important; opacity: 0.6; }
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 100; justify-content: center; align-items: center; }
     </style>
 </head>
-<body class="bg-slate-50 p-6 md:p-10 text-slate-800">
+<body class="bg-slate-50 p-5 text-slate-800">
+    <div id="loader" class="loading-overlay italic font-bold text-blue-600">同步雲端資料中...</div>
 
     <div class="max-w-7xl mx-auto">
-        <header class="mb-10">
-            <div class="flex justify-between items-end mb-6">
-                <div>
-                    <h1 class="text-4xl font-black italic tracking-tighter text-slate-900">HOME<span class="text-blue-600">SELF</span></h1>
-                    <p class="text-slate-400 font-bold text-xs uppercase mt-1">智能代管系統 · LINE 整合版</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">本月收租進度</p>
-                    <p id="progress-text" class="text-3xl font-black text-blue-600">0%</p>
-                </div>
+        <header class="mb-8 flex justify-between items-end">
+            <div>
+                <h1 class="text-4xl font-black italic text-slate-900 uppercase">HOME<span class="text-blue-600">SELF</span></h1>
+                <p class="text-slate-400 font-bold text-[10px] tracking-widest">CLOUD SYNC ACTIVE</p>
             </div>
-            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden shadow-inner">
-                <div id="progress-fill" class="progress-bar bg-blue-500 h-full w-0"></div>
+            <div class="text-right">
+                <p id="progress-text" class="text-3xl font-black text-blue-600">0%</p>
             </div>
         </header>
 
-        <div id="app" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        <div id="app" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
     </div>
 
     <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycby87-F4k5AzYmEFzk9OsscaM5cm9bGyii25M2c7Vf0FoK-Fz5a7JJMIkpaalonwE1Oz/exec"; // ⚠️ 在此貼上你的 Apps Script 網址
+        
         const properties = [
-            { id: 1, name: "紐約 3521", info: "王先生 (Nvdia)", vibe: "" },
-            { id: 2, name: "紐約 3536", info: "富邦", vibe: "" },
-            { id: 3, name: "美麗新 593", info: "黑人", vibe: "glow-purple", alert: "🚨 待補簽約 (過期)" },
-            { id: 4, name: "美麗新 132", info: "蕭先生", vibe: "" },
-            { id: 5, name: "竹科潤隆", info: "租約至 116/05", vibe: "stable", alert: "🟢 穩定運行" },
-            { id: 6, name: "國家大院", info: "待確認資料", vibe: "" },
-            { id: 7, name: "勝興豐境", info: "租約至 115/08", vibe: "glow-yellow", alert: "🟡 續約詢問期" },
-            { id: 8, name: "杭州南路雞排店", info: "店面", vibe: "" },
-            { id: 9, name: "宏觀大器", info: "外商", vibe: "" },
-            { id: 10, name: "福州", info: "待核對", vibe: "" }
+            { id: 1, name: "美國 3521", info: "王先生 (N-VD)", alert: "" },
+            { id: 2, name: "美國 3536", info: "F-邦", alert: "" },
+            { id: 3, name: "美●新 593", info: "H-Man", alert: "🚨 待補簽約" },
+            { id: 4, name: "美●新 132", info: "S-先生", alert: "" },
+            { id: 5, name: "竹●隆", info: "116/05 結", alert: "🟢 穩定運行" },
+            { id: 6, name: "國●院", info: "待確認資料", alert: "" },
+            { id: 7, name: "勝●境", info: "115/08 結", alert: "🟡 續約詢問" },
+            { id: 8, name: "雞排店", info: "店面租", alert: "" },
+            { id: 9, name: "宏●器", info: "外商房客", alert: "" },
+            { id: 10, name: "福●", info: "待核對", alert: "" }
         ];
 
-        let paidIds = new Set(JSON.parse(localStorage.getItem('homeself_paid_records')) || []);
+        let cloudData = {};
 
-        function openLine(propName, alertType) {
-            let msg = `您好，我是 HomeSelf 物業管理員。關於「${propName}」`;
-            if (alertType && alertType.includes('待補簽約')) {
-                msg += `的合約已到期，想跟您確認續約補簽事宜，謝謝。`;
-            } else if (alertType && alertType.includes('續約詢問')) {
-                msg += `的合約即將到期，想提前詢問您是否有續約意願？`;
-            } else {
-                msg += `本月租金提醒，若已匯款請忽略此訊息，謝謝。`;
-            }
-            window.open(`https://line.me/R/msg/text/?${encodeURIComponent(msg)}`);
+        async function fetchCloudData() {
+            document.getElementById('loader').style.display = 'flex';
+            try {
+                const response = await fetch(API_URL);
+                cloudData = await response.json();
+                render();
+            } catch (e) { alert("同步失敗，請檢查網路或 API 網址"); }
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        async function togglePaid(id) {
+            const newStatus = !cloudData[id];
+            document.getElementById('loader').style.display = 'flex';
+            
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ id: id, status: newStatus })
+                });
+                cloudData[id] = newStatus;
+                render();
+            } catch (e) { alert("更新失敗"); }
+            document.getElementById('loader').style.display = 'none';
         }
 
         function render() {
             const app = document.getElementById('app');
             app.innerHTML = '';
-            
+            let paidCount = 0;
+
             properties.forEach(p => {
-                const isPaid = paidIds.has(p.id);
+                const isPaid = cloudData[p.id] === true;
+                if(isPaid) paidCount++;
                 const card = document.createElement('div');
-                card.className = `vibe-card bg-white p-6 rounded-[2.5rem] shadow-md relative ${isPaid ? 'is-paid' : p.vibe}`;
+                card.className = `vibe-card bg-white p-6 rounded-[2.5rem] shadow-sm relative border ${isPaid ? 'is-paid' : 'border-white'}`;
                 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
-                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase transition ${isPaid ? 'bg-green-600 text-white' : (p.alert ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400')}">
+                        <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${isPaid ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-400'}">
                             ${isPaid ? '✅ 已入帳' : (p.alert || '⌛ 待收租')}
                         </span>
-                        <button onclick="openLine('${p.name}', '${p.alert || ''}')" class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition transform hover:scale-110 shadow-sm">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 10.3c0-4.6-5.4-8.3-12-8.3s-12 3.7-12 8.3c0 4.1 4.3 7.5 10.1 8.2.4.1.9.4 1 .9.1.5 0 1.2-.2 1.8l-.4 1.5c-.1.5.3.7.6.4l2.1-2.2c.4-.4.9-.7 1.4-.7 5.6-.4 9.4-3.8 9.4-8.1z"/></svg>
-                        </button>
                     </div>
-                    <h2 class="text-xl font-black ${isPaid ? 'text-green-800' : 'text-slate-800'}">${p.name}</h2>
-                    <p class="text-[10px] font-bold text-slate-400 mb-6 uppercase">${p.info}</p>
-                    <button onclick="togglePaid(${p.id})" class="w-full py-3 rounded-2xl font-black text-xs transition-all ${isPaid ? 'bg-white text-slate-400 border hover:text-red-500' : 'bg-slate-900 text-white shadow-lg'}">
-                        ${isPaid ? '回復未收狀態' : '確認收租'}
+                    <h2 class="text-xl font-black">${p.name}</h2>
+                    <p class="text-[10px] font-bold text-slate-400 mb-6 uppercase tracking-widest">${p.info}</p>
+                    <button onclick="togglePaid(${p.id})" class="w-full py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all ${isPaid ? 'bg-white text-slate-400 border border-slate-100' : 'bg-slate-900 text-white shadow-lg'}">
+                        ${isPaid ? '回復未收' : '已收款'}
                     </button>
                 `;
                 app.appendChild(card);
             });
-            updateProgress();
+            document.getElementById('progress-text').innerText = Math.round((paidCount / properties.length) * 100) + '%';
         }
 
-        function togglePaid(id) {
-            paidIds.has(id) ? paidIds.delete(id) : paidIds.add(id);
-            localStorage.setItem('homeself_paid_records', JSON.stringify([...paidIds]));
-            render();
-        }
-
-        function updateProgress() {
-            const percent = Math.round((paidIds.size / properties.length) * 100);
-            document.getElementById('progress-fill').style.width = percent + '%';
-            document.getElementById('progress-text').innerText = percent + '%';
-        }
-
-        render();
+        fetchCloudData();
     </script>
 </body>
 </html>
