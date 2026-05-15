@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HomeSelf Cloud Pro</title>
+    <title>ManagerPro Cloud Pro</title>
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230F172A'/><path d='M30 30 V70 M70 30 V70 M30 50 H70' stroke='white' stroke-width='12' stroke-linecap='round'/><circle cx='50' cy='42' r='6' fill='%233B82F6'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -11,16 +11,30 @@
         .vibe-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .is-paid { background-color: #f0fdf4 !important; border: 2px solid #86efac !important; opacity: 0.6; }
         .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        
+        /* 閃爍動畫特效 */
+        @keyframes pulse-border-red {
+            0% { border-color: #ef4444; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { border-color: #ef4444; box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { border-color: #ef4444; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        @keyframes pulse-border-orange {
+            0% { border-color: #f97316; box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); }
+            70% { border-color: #f97316; box-shadow: 0 0 0 15px rgba(249, 115, 22, 0); }
+            100% { border-color: #f97316; box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+        }
+        .alert-expired { animation: pulse-border-red 2s infinite; border: 3px solid #ef4444 !important; }
+        .alert-warning { animation: pulse-border-orange 2s infinite; border: 3px solid #f97316 !important; }
     </style>
 </head>
 <body class="bg-slate-50 p-5 text-slate-800 font-sans">
-    <div id="loader" class="loading-overlay italic font-bold text-blue-600">CLOUD SYNCING...</div>
+    <div id="loader" class="loading-overlay italic font-bold text-blue-600">SYNCING DATA...</div>
 
     <div class="max-w-7xl mx-auto">
         <header class="mb-8 flex justify-between items-end">
             <div>
-                <h1 class="text-4xl font-black italic text-slate-900 uppercase tracking-tighter">HOME<span class="text-blue-600">SELF</span></h1>
-                <p class="text-slate-400 font-bold text-[10px] tracking-widest uppercase">Asset Management Pro</p>
+                <h1 class="text-4xl font-black italic text-slate-900 uppercase tracking-tighter">MANAGER<span class="text-blue-600">PRO</span></h1>
+                <p class="text-slate-400 font-bold text-[10px] tracking-widest uppercase">Cloud Asset Dashboard</p>
             </div>
             <div class="text-right">
                 <p id="progress-text" class="text-4xl font-black text-blue-600 leading-none">0%</p>
@@ -34,30 +48,31 @@
         const API_URL = "https://script.google.com/macros/s/AKfycby87-F4k5AzYmEFzk9OsscaM5cm9bGyii25M2c7Vf0FoK-Fz5a7JJMIkpaalonwE1Oz/exec";
         
         const properties = [
-            { id: 1, name: "紐3521", info: "NV (1日 $20,500)", leaseEnd: "2025-10-14", displayLease: "113.10.14～114.10.14", alert: "" },
+            { id: 1, name: "紐3521", info: "NV (3日前 $20,500)", leaseEnd: "2025-10-14", displayLease: "113.10.14～114.10.14", alert: "" },
             { id: 2, name: "紐3536", info: "FB Bank (4日前 $20,000)", leaseEnd: "2027-02-02", displayLease: "114.02.04～116.02.02", alert: "" },
+            { id: 6, name: "國●院", info: "Kao (5日前 $22,500)", leaseEnd: "", displayLease: "待確認", alert: "" },
             { id: 3, name: "美593", info: "Hsiao (8日前 $18,000)", leaseEnd: "2026-02-28", displayLease: "114.02.28～115.02.28", alert: "" },
+            { id: 7, name: "勝●境", info: "一般房客 (15日前 $19,000)", leaseEnd: "2026-08-15", displayLease: "114.08.16～115.08.15", alert: "" },
             { id: 4, name: "美132", info: "Black (20日前 $18,000)", leaseEnd: "2025-06-20", displayLease: "113.06.21～114.06.20", alert: "" },
             { id: 5, name: "竹●隆", info: "工程師 (25日前 $27,500)", leaseEnd: "2027-05-24", displayLease: "114.05.26～116.05.24", alert: "🟢 穩定運行" },
-            { id: 6, name: "國●院", info: "待確認", leaseEnd: "", displayLease: "", alert: "" },
-            { id: 7, name: "勝●境", info: "一般房客 (15日前 $19,000)", leaseEnd: "2026-08-15", displayLease: "114.08.16～115.08.15", alert: "" },
-            { id: 8, name: "雞排", info: "店面租", leaseEnd: "", displayLease: "", alert: "" },
-            { id: 9, name: "宏●器", info: "Milly (外商)", leaseEnd: "", displayLease: "", alert: "" },
+            { id: 8, name: "雞排", info: "店面租 (30日前 $27,000)", leaseEnd: "", displayLease: "待確認", alert: "" },
+            { id: 9, name: "宏●器", info: "Milly | $34,000", leaseEnd: "2026-08-10", displayLease: "114.08.11～115.08.10", alert: "💰 已年繳" },
             { id: 10, name: "福●", info: "待核對", leaseEnd: "", displayLease: "", alert: "" }
         ];
 
         let cloudData = {};
 
         function getLeaseStatus(endDateStr) {
-            if (!endDateStr) return { color: 'text-slate-300', label: '' };
+            if (!endDateStr || endDateStr === "待確認") return { color: 'text-slate-300', label: '', className: '' };
             const endDate = new Date(endDateStr);
             const today = new Date();
             const diffTime = endDate - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            if (diffDays < 0) return { color: 'text-red-600 font-black', label: '🚫 已過期' };
-            if (diffDays <= 90) return { color: 'text-orange-500 font-black', label: '⚠️ 即將到期' };
-            return { color: 'text-slate-900 font-black', label: '' };
+            // 設定狀態與對應動畫樣式
+            if (diffDays < 0) return { color: 'text-red-600 font-black text-lg', label: '🚫 已過期', className: 'alert-expired' };
+            if (diffDays <= 90) return { color: 'text-orange-500 font-black text-lg', label: '⚠️ 即將到期', className: 'alert-warning' };
+            return { color: 'text-slate-900 font-black', label: '', className: '' };
         }
 
         async function fetchCloudData() {
@@ -95,18 +110,20 @@
                 
                 const leaseStatus = getLeaseStatus(p.leaseEnd);
                 const card = document.createElement('div');
-                card.className = `vibe-card bg-white p-6 rounded-[2.5rem] shadow-sm relative border-2 ${isPaid ? 'is-paid' : 'border-white'}`;
+                // 根據狀態套用對應的 class
+                const alertClass = !isPaid ? leaseStatus.className : '';
+                card.className = `vibe-card bg-white p-6 rounded-[2.5rem] shadow-sm relative border-2 ${isPaid ? 'is-paid' : 'border-white'} ${alertClass}`;
                 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
                         <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${isPaid ? 'bg-green-600 text-white' : (p.alert ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400')}">
                             ${isPaid ? '✅ 已入帳' : (p.alert || '⌛ 待收租')}
                         </span>
-                        <span class="text-[9px] ${leaseStatus.color}">${leaseStatus.label}</span>
+                        <span class="${leaseStatus.color}">${leaseStatus.label}</span>
                     </div>
                     <h2 class="text-2xl font-black text-slate-900 mb-4">${p.name}</h2>
                     <div class="space-y-1 mb-8">
-                        <p class="text-[11px] uppercase tracking-tighter ${leaseStatus.color}">
+                        <p class="text-[11px] uppercase tracking-tighter ${leaseStatus.color.includes('text-red') || leaseStatus.color.includes('text-orange') ? 'font-black' : ''}">
                             ${p.displayLease ? '租約：' + p.displayLease : '租約：尚未輸入'}
                         </p>
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">
