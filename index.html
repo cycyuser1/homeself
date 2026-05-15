@@ -33,17 +33,18 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby87-F4k5AzYmEFzk9OsscaM5cm9bGyii25M2c7Vf0FoK-Fz5a7JJMIkpaalonwE1Oz/exec";
         
+        // 核心物件資料庫
         const properties = [
-            { id: 1, name: "紐3521", info: "NV", lease: "", alert: "" },
-            { id: 2, name: "紐3536", info: "FB Bank", lease: "", alert: "" },
-            { id: 3, name: "美593", info: "Hsiao", lease: "", alert: "🚨 待補簽約" },
-            { id: 4, name: "美132", info: "Black", lease: "", alert: "" },
-            { id: 5, name: "竹隆", info: "工程師", lease: "至 116/05", alert: "🟢 穩定運行" },
-            { id: 6, name: "國院", info: "待確認", lease: "", alert: "" },
-            { id: 7, name: "勝境", info: "一般房客", lease: "至 115/08", alert: "🟡 續約詢問" },
+            { id: 1, name: "紐3521", info: "NV (1日 $20,500)", lease: "113.10.14～114.10.14", alert: "" },
+            { id: 2, name: "紐3536", info: "FB Bank (4日前 $20,000)", lease: "114.02.04～116.02.02", alert: "" },
+            { id: 3, name: "美593", info: "Hsiao (8日前 $18,000)", lease: "114.02.28～115.02.28", alert: "" },
+            { id: 4, name: "美132", info: "Black (20日前 $18,000)", lease: "113.06.21～114.06.20", alert: "" },
+            { id: 5, name: "竹●隆", info: "工程師 (25日前 $27,500)", lease: "114.05.26～116.05.24", alert: "🟢 穩定運行" },
+            { id: 6, name: "國●院", info: "待確認", lease: "", alert: "" },
+            { id: 7, name: "勝●境", info: "一般房客", lease: "至 115/08", alert: "🟡 續約詢問" },
             { id: 8, name: "雞排", info: "店面租", lease: "", alert: "" },
-            { id: 9, name: "宏器", info: "Milly (外商)", lease: "", alert: "" },
-            { id: 10, name: "福西", info: "待核對", lease: "", alert: "" }
+            { id: 9, name: "宏●器", info: "Milly (外商)", lease: "", alert: "" },
+            { id: 10, name: "福●", info: "待核對", lease: "", alert: "" }
         ];
 
         let cloudData = {};
